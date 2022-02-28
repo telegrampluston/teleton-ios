@@ -261,6 +261,12 @@ public enum PresentationResourceKey: Int32 {
     case chatFreeCommentButtonIcon
     case chatFreeNavigateButtonIcon
     case chatFreeShareButtonIcon
+    // MARK: - Fork Begin
+    case transactionLockIcon
+    case clockFrame
+    case clockMin
+    case navigationWalletIcon
+    // MARK: - Forn End
 }
 
 public enum PresentationResourceParameterKey: Hashable {

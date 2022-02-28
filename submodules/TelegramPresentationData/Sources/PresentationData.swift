@@ -77,6 +77,7 @@ public struct PresentationChatBubbleCorners: Equatable, Hashable {
 
 public final class PresentationData: Equatable {
     public let strings: PresentationStrings
+    public let walletStrings: WalletStrings // Fork
     public let theme: PresentationTheme
     public let autoNightModeTriggered: Bool
     public let chatWallpaper: TelegramWallpaper
@@ -89,8 +90,9 @@ public final class PresentationData: Equatable {
     public let reduceMotion: Bool
     public let largeEmoji: Bool
     
-    public init(strings: PresentationStrings, theme: PresentationTheme, autoNightModeTriggered: Bool, chatWallpaper: TelegramWallpaper, chatFontSize: PresentationFontSize, chatBubbleCorners: PresentationChatBubbleCorners, listsFontSize: PresentationFontSize, dateTimeFormat: PresentationDateTimeFormat, nameDisplayOrder: PresentationPersonNameOrder, nameSortOrder: PresentationPersonNameOrder, reduceMotion: Bool, largeEmoji: Bool) {
+    public init(strings: PresentationStrings,/* Fork Begin */walletStrings: WalletStrings,/* Fork End */ theme: PresentationTheme, autoNightModeTriggered: Bool, chatWallpaper: TelegramWallpaper, chatFontSize: PresentationFontSize, chatBubbleCorners: PresentationChatBubbleCorners, listsFontSize: PresentationFontSize, dateTimeFormat: PresentationDateTimeFormat, nameDisplayOrder: PresentationPersonNameOrder, nameSortOrder: PresentationPersonNameOrder, reduceMotion: Bool, largeEmoji: Bool) {
         self.strings = strings
+        self.walletStrings = walletStrings
         self.theme = theme
         self.autoNightModeTriggered = autoNightModeTriggered
         self.chatWallpaper = chatWallpaper
@@ -105,11 +107,11 @@ public final class PresentationData: Equatable {
     }
     
     public func withUpdated(theme: PresentationTheme) -> PresentationData {
-        return PresentationData(strings: self.strings, theme: theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: self.chatWallpaper, chatFontSize: self.chatFontSize, chatBubbleCorners: self.chatBubbleCorners, listsFontSize: self.listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
+        return PresentationData(strings: self.strings,/* Fork Begin */walletStrings: self.walletStrings,/* Fork End */ theme: theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: self.chatWallpaper, chatFontSize: self.chatFontSize, chatBubbleCorners: self.chatBubbleCorners, listsFontSize: self.listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
     }
     
     public func withUpdated(chatWallpaper: TelegramWallpaper) -> PresentationData {
-        return PresentationData(strings: self.strings, theme: self.theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: chatWallpaper, chatFontSize: self.chatFontSize, chatBubbleCorners: self.chatBubbleCorners, listsFontSize: self.listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
+        return PresentationData(strings: self.strings,/* Fork Begin */walletStrings: self.walletStrings,/* Fork End */ theme: self.theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: chatWallpaper, chatFontSize: self.chatFontSize, chatBubbleCorners: self.chatBubbleCorners, listsFontSize: self.listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
     }
     
     public static func ==(lhs: PresentationData, rhs: PresentationData) -> Bool {
@@ -318,6 +320,18 @@ public func currentPresentationDataAndSettings(accountManager: AccountManager<Te
         } else {
             stringsValue = defaultPresentationStrings
         }
+        // MARK: - Fork Begin
+        let walletStrings = WalletStrings(
+            primaryComponent: WalletStringsComponent(
+                languageCode: "en",
+                localizedName: "English",
+                pluralizationRulesCode: "en",
+                dict: [:]
+            ),
+            secondaryComponent: nil,
+            groupingSeparator: " "
+        )
+        // MARK: - Fork End
         let nameDisplayOrder = contactSettings.nameDisplayOrder
         let nameSortOrder = currentPersonNameSortOrder()
         
@@ -325,7 +339,7 @@ public func currentPresentationDataAndSettings(accountManager: AccountManager<Te
         
         let chatBubbleCorners = PresentationChatBubbleCorners(mainRadius: CGFloat(themeSettings.chatBubbleSettings.mainRadius), auxiliaryRadius: CGFloat(themeSettings.chatBubbleSettings.auxiliaryRadius), mergeBubbleCorners: themeSettings.chatBubbleSettings.mergeBubbleCorners)
         
-        return InitialPresentationDataAndSettings(presentationData: PresentationData(strings: stringsValue, theme: theme, autoNightModeTriggered: autoNightModeTriggered, chatWallpaper: effectiveChatWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: dateTimeFormat, nameDisplayOrder: nameDisplayOrder, nameSortOrder: nameSortOrder, reduceMotion: themeSettings.reduceMotion, largeEmoji: themeSettings.largeEmoji), automaticMediaDownloadSettings: automaticMediaDownloadSettings, autodownloadSettings: autodownloadSettings, callListSettings: callListSettings, inAppNotificationSettings: inAppNotificationSettings, mediaInputSettings: mediaInputSettings, experimentalUISettings: experimentalUISettings)
+        return InitialPresentationDataAndSettings(presentationData: PresentationData(strings: stringsValue,/* Fork Begin */walletStrings: walletStrings,/* Fork End */ theme: theme, autoNightModeTriggered: autoNightModeTriggered, chatWallpaper: effectiveChatWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: dateTimeFormat, nameDisplayOrder: nameDisplayOrder, nameSortOrder: nameSortOrder, reduceMotion: themeSettings.reduceMotion, largeEmoji: themeSettings.largeEmoji), automaticMediaDownloadSettings: automaticMediaDownloadSettings, autodownloadSettings: autodownloadSettings, callListSettings: callListSettings, inAppNotificationSettings: inAppNotificationSettings, mediaInputSettings: mediaInputSettings, experimentalUISettings: experimentalUISettings)
     }
 }
 
@@ -685,6 +699,18 @@ public func updatedPresentationData(accountManager: AccountManager<TelegramAccou
                         } else {
                             stringsValue = defaultPresentationStrings
                         }
+                        // MARK: - Fork Begin
+                        let walletStrings = WalletStrings(
+                            primaryComponent: WalletStringsComponent(
+                                languageCode: "en",
+                                localizedName: "English",
+                                pluralizationRulesCode: "en",
+                                dict: [:]
+                            ),
+                            secondaryComponent: nil,
+                            groupingSeparator: " "
+                        )
+                        // MARK: - Fork End
                         let nameDisplayOrder = contactSettings.nameDisplayOrder
                         let nameSortOrder = currentPersonNameSortOrder()
                         
@@ -692,7 +718,7 @@ public func updatedPresentationData(accountManager: AccountManager<TelegramAccou
                         
                         let chatBubbleCorners = PresentationChatBubbleCorners(mainRadius: CGFloat(themeSettings.chatBubbleSettings.mainRadius), auxiliaryRadius: CGFloat(themeSettings.chatBubbleSettings.auxiliaryRadius), mergeBubbleCorners: themeSettings.chatBubbleSettings.mergeBubbleCorners)
                         
-                        return PresentationData(strings: stringsValue, theme: themeValue, autoNightModeTriggered: autoNightModeTriggered, chatWallpaper: effectiveChatWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: dateTimeFormat, nameDisplayOrder: nameDisplayOrder, nameSortOrder: nameSortOrder, reduceMotion: themeSettings.reduceMotion, largeEmoji: themeSettings.largeEmoji)
+                        return PresentationData(strings: stringsValue,/* Fork Begin */walletStrings: walletStrings,/* Fork End */ theme: themeValue, autoNightModeTriggered: autoNightModeTriggered, chatWallpaper: effectiveChatWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: dateTimeFormat, nameDisplayOrder: nameDisplayOrder, nameSortOrder: nameSortOrder, reduceMotion: themeSettings.reduceMotion, largeEmoji: themeSettings.largeEmoji)
                     }
                 } else {
                     return .complete()
@@ -726,20 +752,66 @@ public func defaultPresentationData() -> PresentationData {
     let (chatFontSize, listsFontSize) = resolveFontSize(settings: themeSettings)
     
     let chatBubbleCorners = PresentationChatBubbleCorners(mainRadius: CGFloat(themeSettings.chatBubbleSettings.mainRadius), auxiliaryRadius: CGFloat(themeSettings.chatBubbleSettings.auxiliaryRadius), mergeBubbleCorners: themeSettings.chatBubbleSettings.mergeBubbleCorners)
-    
-    return PresentationData(strings: defaultPresentationStrings, theme: defaultPresentationTheme, autoNightModeTriggered: false, chatWallpaper: defaultPresentationTheme.chat.defaultWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: dateTimeFormat, nameDisplayOrder: nameDisplayOrder, nameSortOrder: nameSortOrder, reduceMotion: themeSettings.reduceMotion, largeEmoji: themeSettings.largeEmoji)
+    // MARK: - Fork Begin
+    let walletStrings = WalletStrings(
+        primaryComponent: WalletStringsComponent(
+            languageCode: "en",
+            localizedName: "English",
+            pluralizationRulesCode: "en",
+            dict: [:]
+        ),
+        secondaryComponent: nil,
+        groupingSeparator: " "
+    )
+    // MARK: - Fork End
+    return PresentationData(strings: defaultPresentationStrings,/* Fork Begin */walletStrings: walletStrings,/* Fork End */ theme: defaultPresentationTheme, autoNightModeTriggered: false, chatWallpaper: defaultPresentationTheme.chat.defaultWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: dateTimeFormat, nameDisplayOrder: nameDisplayOrder, nameSortOrder: nameSortOrder, reduceMotion: themeSettings.reduceMotion, largeEmoji: themeSettings.largeEmoji)
 }
 
 public extension PresentationData {
     func withFontSizes(chatFontSize: PresentationFontSize, listsFontSize: PresentationFontSize) -> PresentationData {
-        return PresentationData(strings: self.strings, theme: self.theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: self.chatWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: self.chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
+        return PresentationData(strings: self.strings,/* Fork Begin */walletStrings: self.walletStrings,/* Fork End */ theme: self.theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: self.chatWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: self.chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
     }
     
     func withChatBubbleCorners(_ chatBubbleCorners: PresentationChatBubbleCorners) -> PresentationData {
-        return PresentationData(strings: self.strings, theme: self.theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: self.chatWallpaper, chatFontSize: self.chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: self.listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
+        return PresentationData(strings: self.strings,/* Fork Begin */walletStrings: self.walletStrings,/* Fork End */ theme: self.theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: self.chatWallpaper, chatFontSize: self.chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: self.listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
     }
     
     func withStrings(_ strings: PresentationStrings) -> PresentationData {
-        return PresentationData(strings: strings, theme: self.theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: self.chatWallpaper, chatFontSize: self.chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: self.listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
+        return PresentationData(strings: strings,/* Fork Begin */walletStrings: self.walletStrings,/* Fork End */ theme: self.theme, autoNightModeTriggered: self.autoNightModeTriggered, chatWallpaper: self.chatWallpaper, chatFontSize: self.chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: self.listsFontSize, dateTimeFormat: self.dateTimeFormat, nameDisplayOrder: self.nameDisplayOrder, nameSortOrder: self.nameSortOrder, reduceMotion: self.reduceMotion, largeEmoji: self.largeEmoji)
     }
 }
+
+// MARK: - Fork Begin
+public func walletTransactionLockIcon(_ theme: PresentationTheme) -> UIImage? {
+    return theme.image(PresentationResourceKey.transactionLockIcon.rawValue, { theme in
+        return generateTintedImage(image: UIImage(bundleImageName: "Wallet/EncryptedComment"), color: theme.list.itemSecondaryTextColor)
+    })
+}
+
+public func clockFrameImage(_ theme: PresentationTheme) -> UIImage? {
+    return theme.image(PresentationResourceKey.clockFrame.rawValue, { theme in
+        let color = theme.list.itemSecondaryTextColor
+        return generateImage(CGSize(width: 11.0, height: 11.0), contextGenerator: { size, context in
+            context.clear(CGRect(origin: CGPoint(), size: size))
+            context.setStrokeColor(color.cgColor)
+            context.setFillColor(color.cgColor)
+            let strokeWidth: CGFloat = 1.0
+            context.setLineWidth(strokeWidth)
+            context.strokeEllipse(in: CGRect(x: strokeWidth / 2.0, y: strokeWidth / 2.0, width: size.width - strokeWidth, height: size.height - strokeWidth))
+            context.fill(CGRect(x: (11.0 - strokeWidth) / 2.0, y: strokeWidth * 3.0, width: strokeWidth, height: 11.0 / 2.0 - strokeWidth * 3.0))
+        })
+    })
+}
+
+public func clockMinImage(_ theme: PresentationTheme) -> UIImage? {
+    return theme.image(PresentationResourceKey.clockMin.rawValue, { theme in
+        let color = theme.list.itemSecondaryTextColor
+        return generateImage(CGSize(width: 11.0, height: 11.0), contextGenerator: { size, context in
+            context.clear(CGRect(origin: CGPoint(), size: size))
+            context.setFillColor(color.cgColor)
+            let strokeWidth: CGFloat = 1.0
+            context.fill(CGRect(x: (11.0 - strokeWidth) / 2.0, y: (11.0 - strokeWidth) / 2.0, width: 11.0 / 2.0 - strokeWidth, height: strokeWidth))
+        })
+    })
+}
+// MARK: - Fork End

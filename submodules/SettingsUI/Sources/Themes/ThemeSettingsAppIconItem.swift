@@ -321,6 +321,18 @@ class ThemeSettingsAppIconItemNode: ListViewItemNode, ItemListItemNode {
                                     name = item.strings.Appearance_AppIconNew1
                                 case "New2":
                                     name = item.strings.Appearance_AppIconNew2
+                                // MARK: - Fork
+                                case "ForkMainIcon":
+                                    name = item.strings.Appearance_AppIconDefault
+                                case "ForkRubyIcon":
+                                    name = "Ruby"
+                                case "ForkOnyxIcon":
+                                    name = "Onyx"
+                                case "ForkEmeraldIcon":
+                                    name = "Emerald"
+                                case "ForkAmethystIcon":
+                                    name = "Amethyst"
+                                // MARK: -
                                 default:
                                     break
                             }

@@ -123,6 +123,16 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+genrule(
+    name = "boringssl_include",
+    srcs = [":" + x for x in ssl_headers + crypto_headers],
+    outs = ["Public/" + x for x in ssl_headers + crypto_headers],
+    cmd_bash = " && ".join(["cp $(location :{}) $(location Public/{})".format(x, x) for x in ssl_headers + crypto_headers]),
+    visibility = [
+        "//visibility:public",
+    ],
+)
+
 cc_library(
     name = "ssl",
     srcs = ssl_sources + ssl_internal_headers,

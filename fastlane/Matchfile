@@ -1,0 +1,17 @@
+git_url("git@github.com:alexanderlurie/teleton-signing-identities.git")
+
+storage_mode("git")
+
+type("development") # The default type, can be: appstore, adhoc, enterprise or development
+
+app_identifier([
+  "com.teleton.app", 
+  "com.teleton.app.NotificationContent",
+  "com.teleton.app.NotificationService",
+  "com.teleton.app.Widget",
+  "com.teleton.app.Share",
+  "com.teleton.app.SiriIntents",
+  "com.teleton.app.watchkitapp",
+  "com.teleton.app.watchkitapp.watchkitextension",
+])
+team_id("ZDYX45DG63")

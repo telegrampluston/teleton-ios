@@ -26,3 +26,6 @@ url=../tgcalls.git
 [submodule "third-party/webrtc/webrtc"]
 	path = third-party/webrtc/webrtc
 	url = https://github.com/ali-fareed/webrtc.git
+[submodule "submodules/ton/tonlib-src"]
+	path = submodules/ton/tonlib-src
+	url = https://github.com/telegrampluston/ton.git

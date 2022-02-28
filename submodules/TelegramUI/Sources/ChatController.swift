@@ -68,6 +68,7 @@ import CalendarMessageScreen
 import ReactionSelectionNode
 import LottieMeshSwift
 import ReactionListContextMenuContent
+import ForkWalletCore // Fork
 
 #if DEBUG
 import os.signpost
@@ -504,6 +505,11 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
     
     private var inviteRequestsContext: PeerInvitationImportersContext?
     private var inviteRequestsDisposable = MetaDisposable()
+    // MARK: - Fork begin
+    private lazy var sendFlow: SendFlow = {
+        SendFlowAssembly.instance(from: context.diContext).sendFlow(with: context)
+    }()
+    // MARK: Fork end -
     
     public init(context: AccountContext, chatLocation: ChatLocation, chatLocationContextHolder: Atomic<ChatLocationContextHolder?> = Atomic<ChatLocationContextHolder?>(value: nil), subject: ChatControllerSubject? = nil, botStart: ChatControllerInitialBotStart? = nil, mode: ChatControllerPresentationMode = .standard(previewing: false), peekData: ChatPeekTimeout? = nil, peerNearbyData: ChatPeerNearbyData? = nil, chatListFilter: Int32? = nil, chatNavigationStack: [PeerId] = []) {
         let _ = ChatControllerCount.modify { value in
@@ -1867,6 +1873,30 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
             }
         }, openUrl: { [weak self] url, concealed, _, message in
             if let strongSelf = self {
+                // MARK: - Fork begin
+                if url.hasPrefix(Config.linkAddressUrl) {
+                    guard let walletContext = strongSelf.context.walletContext.with({ $0 }) else {
+                        return
+                    }
+                    var disposable: Disposable?
+                    disposable = (
+                        walletContext.storage.getWalletRecords() |> deliverOnMainQueue
+                    ).start(next: { records in
+                        guard let info = records.first?.info else {
+                            return
+                        }
+                        switch info {
+                        case .ready(info: let info, exportCompleted: _, state: _):
+                            strongSelf.sendMessages([.message(text: info.address, attributes: [], mediaReference: nil, replyToMessageId: nil, localGroupingKey: nil, correlationId: nil)])
+                        case .imported(info: _):
+                            break
+                        }
+                        disposable?.dispose()
+                        disposable = nil
+                    })
+                    return
+                }
+                // MARK: Fork end -
                 strongSelf.openUrl(url, concealed: concealed, message: message)
             }
         }, shareCurrentLocation: { [weak self] in
@@ -10491,7 +10521,9 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
                 return self?.getCaptionPanelView()
             }, present: { [weak self] c, a in
                 self?.present(c, in: .window(.root), with: a)
-            })
+            }/*Fork start*/, sendTransaction: { [weak self] in
+                self?.sendTransaction()
+            }/*Fork end*/)
             controller.didDismiss = { [weak legacyController] _ in
                 legacyController?.dismiss()
             }
@@ -14761,6 +14793,12 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
             return false
         }
     }
+    
+    // MARK: - Fork begin
+    private func sendTransaction() {
+        sendFlow.send(to: chatLocation.peerId)
+    }
+    // MARK: Fork end -
 }
 
 private final class ContextControllerContentSourceImpl: ContextControllerContentSource {

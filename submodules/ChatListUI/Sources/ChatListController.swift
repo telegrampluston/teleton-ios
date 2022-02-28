@@ -217,7 +217,11 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                 
                 let rightBarButtonItem = UIBarButtonItem(image: PresentationResourcesRootController.navigationComposeIcon(self.presentationData.theme), style: .plain, target: self, action: #selector(self.composePressed))
                 rightBarButtonItem.accessibilityLabel = self.presentationData.strings.VoiceOver_Navigation_Compose
-                self.navigationItem.rightBarButtonItem = rightBarButtonItem
+                // MARK: - Fork Begin
+                let walletBarButtonItem = UIBarButtonItem(image: PresentationResourcesRootController.navigationWalletIcon(self.presentationData.theme), style: .plain, target: self, action: #selector(self.walletPressed))
+                // MARK: - Fork End
+//                self.navigationItem.rightBarButtonItem = rightBarButtonItem Fork commented
+                self.navigationItem.rightBarButtonItems = [walletBarButtonItem, rightBarButtonItem] // Fork
                 let backBarButtonItem = UIBarButtonItem(title: self.presentationData.strings.DialogList_Title, style: .plain, target: nil, action: nil)
                 backBarButtonItem.accessibilityLabel = self.presentationData.strings.Common_Back
                 self.navigationItem.backBarButtonItem = backBarButtonItem
@@ -345,8 +349,12 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                             } else {
                                 let rightBarButtonItem = UIBarButtonItem(image: PresentationResourcesRootController.navigationComposeIcon(strongSelf.presentationData.theme), style: .plain, target: strongSelf, action: #selector(strongSelf.composePressed))
                                 rightBarButtonItem.accessibilityLabel = strongSelf.presentationData.strings.VoiceOver_Navigation_Compose
+                                // MARK: - Fork Begin
+                                let walletBarButtonItem = UIBarButtonItem(image: PresentationResourcesRootController.navigationWalletIcon(strongSelf.presentationData.theme), style: .plain, target: self, action: #selector(strongSelf.walletPressed))
+                                // MARK: - Fork End
                                 if strongSelf.navigationItem.rightBarButtonItem?.accessibilityLabel != rightBarButtonItem.accessibilityLabel {
-                                    strongSelf.navigationItem.setRightBarButton(rightBarButtonItem, animated: true)
+//                                    strongSelf.navigationItem.setRightBarButton(rightBarButtonItem, animated: true) Fork Commented
+                                    strongSelf.navigationItem.rightBarButtonItems = [walletBarButtonItem, rightBarButtonItem] // Fork
                                 }
                             }
                             
@@ -548,7 +556,11 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
             self.navigationItem.leftBarButtonItem = editItem
             let rightBarButtonItem = UIBarButtonItem(image: PresentationResourcesRootController.navigationComposeIcon(self.presentationData.theme), style: .plain, target: self, action: #selector(self.composePressed))
             rightBarButtonItem.accessibilityLabel = self.presentationData.strings.VoiceOver_Navigation_Compose
-            self.navigationItem.rightBarButtonItem = rightBarButtonItem
+            // MARK: - Fork Begin
+            let walletBarButtonItem = UIBarButtonItem(image: PresentationResourcesRootController.navigationWalletIcon(self.presentationData.theme), style: .plain, target: self, action: #selector(self.walletPressed))
+            // MARK: - Fork End
+//            self.navigationItem.rightBarButtonItem = rightBarButtonItem Fork Commented
+            self.navigationItem.rightBarButtonItems = [walletBarButtonItem, rightBarButtonItem]
         } else {
             self.navigationItem.rightBarButtonItem = editItem
         }
@@ -1933,6 +1945,12 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
             navigationController.pushViewController(controller)
         }
     }
+    
+    // MARK: - Fork Begin
+    @objc private func walletPressed() {
+        context.openWallet()
+    }
+    // MARK: - Fork End
     
     public override var keyShortcuts: [KeyShortcut] {
         let strings = self.presentationData.strings

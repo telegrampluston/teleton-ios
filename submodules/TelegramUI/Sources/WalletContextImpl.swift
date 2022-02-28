@@ -111,7 +111,6 @@ final class WalletContextImpl: WalletContext {
     let tonInstance: TonInstance
     let keychain: TonKeychain
     let strings: PresentationStrings
-    let presentationData: WalletPresentationData
     
     let supportsCustomConfigurations: Bool = false
     var termsUrl: String? {

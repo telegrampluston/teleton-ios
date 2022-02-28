@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ForkMain</key>
+	<dict>
+		<key>CFBundleIconFiles</key>
+		<array>
+			<string>ForkMainIcon</string>
+			<string>ForkMainNotificationIcon</string>
+		</array>
+		<key>UIPrerenderedIcon</key>
+		<true/>
+	</dict>
+	<key>ForkRuby</key>
+	<dict>
+		<key>UIPrerenderedIcon</key>
+		<true/>
+		<key>CFBundleIconFiles</key>
+		<array>
+			<string>ForkRubyIcon</string>
+			<string>ForkRubyNotificationIcon</string>
+		</array>
+	</dict>
+	<key>ForkOnyx</key>
+	<dict>
+		<key>UIPrerenderedIcon</key>
+		<true/>
+		<key>CFBundleIconFiles</key>
+		<array>
+			<string>ForkOnyxIcon</string>
+			<string>ForkOnyxNotificationIcon</string>
+		</array>
+	</dict>
+	<key>ForkEmerald</key>
+	<dict>
+		<key>UIPrerenderedIcon</key>
+		<true/>
+		<key>CFBundleIconFiles</key>
+		<array>
+			<string>ForkEmeraldIcon</string>
+			<string>ForkEmeraldNotificationIcon</string>
+		</array>
+	</dict>
+	<key>ForkAmethyst</key>
+	<dict>
+		<key>UIPrerenderedIcon</key>
+		<true/>
+		<key>CFBundleIconFiles</key>
+		<array>
+			<string>ForkAmethystIcon</string>
+			<string>ForkAmethystNotificationIcon</string>
+		</array>
+	</dict>
+</dict>
+</plist>

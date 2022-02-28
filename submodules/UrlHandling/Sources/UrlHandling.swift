@@ -8,6 +8,7 @@ import TelegramPresentationData
 import TelegramUIPreferences
 import TelegramNotices
 import AccountContext
+import WalletUrl // Fork
 
 private let baseTelegramMePaths = ["telegram.me", "t.me", "telegram.dog"]
 private let baseTelegraPhPaths = [
@@ -566,6 +567,14 @@ private struct UrlHandlingConfiguration {
 }
 
 public func resolveUrlImpl(context: AccountContext, peerId: PeerId?, url: String, skipUrlAuth: Bool) -> Signal<ResolvedUrl, NoError> {
+    // MARK: - Fork begin
+    if url.hasPrefix("ton://") {
+        if let url = URL(string: url), let parsedUrl = parseWalletUrl(url) {
+            return .single(.wallet(address: parsedUrl.address, amount: parsedUrl.amount, comment: parsedUrl.comment))
+        }
+    }
+    // MARK: Fork end -
+    
     let schemes = ["http://", "https://", ""]
     
     return ApplicationSpecificNotice.getSecretChatLinkPreviews(accountManager: context.sharedContext.accountManager)

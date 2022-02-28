@@ -35,6 +35,7 @@ load(
     "telegram_enable_icloud",
     "telegram_enable_siri",
     "telegram_enable_watch",
+    "appName",
 )
 
 load("@build_bazel_rules_apple//apple:resources.bzl",
@@ -269,15 +270,11 @@ filegroup(
 )
 
 alternate_icon_folders = [
-    "BlackIcon",
-    "BlackClassicIcon",
-    "BlackFilledIcon",
-    "BlueIcon",
-    "BlueClassicIcon",
-    "BlueFilledIcon",
-    "WhiteFilledIcon",
-    "New1",
-    "New2",
+    "ForkMainIcon",
+    "ForkRubyIcon",
+    "ForkOnyxIcon",
+    "ForkEmeraldIcon",
+    "ForkAmethystIcon",
 ]
 
 [
@@ -320,6 +317,9 @@ swift_library(
         "//submodules/TelegramUI:TelegramUIResources",
         "//submodules/TelegramUI:TelegramUIAssets",
         ":GeneratedPresentationStrings/Resources/PresentationStrings.data",
+        # Fork begin,
+        "//submodules/WalletUI:WalletUIResources",
+        "//submodules/WalletUI:WalletUIAssets",
     ],
     deps = [
         "//submodules/TelegramUI:TelegramUI",
@@ -362,6 +362,16 @@ plist_fragment(
             <key>CFBundleURLSchemes</key>
             <array>
                 <string>tg</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>CFBundleURLName</key>
+            <string>{telegram_bundle_id}</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>ton</string>
             </array>
         </dict>
     </array>
@@ -432,11 +442,14 @@ icloud_fragment = "" if not telegram_enable_icloud else """
     telegram_icloud_environment="Production" if telegram_aps_environment == "production" else "Development"
 )
 
-associated_domains_fragment = "" if telegram_bundle_id not in official_bundle_ids else """
+#associated_domains_fragment = "" if telegram_bundle_id not in official_bundle_ids else """ Fork Commented
+# Fork ⬇️
+associated_domains_fragment = """
 <key>com.apple.developer.associated-domains</key>
 <array>
     <string>applinks:telegram.me</string>
     <string>applinks:t.me</string>
+    <string>applinks:ton://</string>
 </array>
 """
 
@@ -482,6 +495,17 @@ plist_fragment(
         communication_notifications_fragment,
     ])
 )
+
+# Fork Begin
+only_app_groups_fragment = """
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.{telegram_bundle_id}</string>
+    </array>
+""".format(
+    telegram_bundle_id=telegram_bundle_id
+)
+# Fork End
 
 filegroup(
     name = "TelegramWatchExtensionResources",
@@ -555,8 +579,10 @@ plist_fragment(
     template =
     """
     <key>CFBundleDisplayName</key>
-    <string>Telegram</string>
-    """
+    <string>{appName}</string>
+    """.format(
+        appName = appName,
+    )
 )
 
 plist_fragment(
@@ -603,13 +629,14 @@ plist_fragment(
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}.watchkitapp.watchkitextension</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>CFBundlePackageType</key>
     <string>XPC!</string>
     <key>WKExtensionDelegateClassName</key>
     <string>TGExtensionDelegate</string>
     """.format(
         telegram_bundle_id = telegram_bundle_id,
+        appName = appName
     )
 )
 
@@ -623,7 +650,7 @@ plist_fragment(
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}.watchkitapp</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
@@ -635,6 +662,7 @@ plist_fragment(
     <string>APPL</string>
     """.format(
         telegram_bundle_id = telegram_bundle_id,
+        appName = appName
     )
 )
 
@@ -1090,7 +1118,7 @@ plist_fragment(
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}.Share</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>CFBundlePackageType</key>
     <string>XPC!</string>
     <key>NSExtension</key>
@@ -1127,6 +1155,7 @@ plist_fragment(
     </dict>
     """.format(
         telegram_bundle_id = telegram_bundle_id,
+        appName = appName
     )
 )
 
@@ -1143,6 +1172,25 @@ swift_library(
         "//submodules/TelegramUI:TelegramUI"
     ],
 )
+
+# Fork Begin
+share_identifier_fragment = """
+    <key>application-identifier</key>
+    <string>{telegram_team_id}.{telegram_bundle_id}.Share</string>
+""".format(
+    telegram_team_id=telegram_team_id,
+    telegram_bundle_id=telegram_bundle_id
+)
+
+plist_fragment(
+    name = "ShareEntitlements",
+    extension = "entitlements",
+    template = "".join([
+        only_app_groups_fragment,
+        share_identifier_fragment
+    ])
+)
+# Fork End
 
 ios_extension(
     name = "ShareExtension",
@@ -1168,6 +1216,7 @@ ios_extension(
     frameworks = [
         ":TelegramUIFramework"
     ],
+    entitlements = ":ShareEntitlements.entitlements" # Fork
 )
 
 plist_fragment(
@@ -1180,7 +1229,7 @@ plist_fragment(
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}.NotificationContent</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>CFBundlePackageType</key>
     <string>XPC!</string>
     <key>NSExtension</key>
@@ -1202,6 +1251,7 @@ plist_fragment(
     </dict>
     """.format(
         telegram_bundle_id = telegram_bundle_id,
+        appName = appName
     )
 )
 
@@ -1249,6 +1299,25 @@ genrule(
     ]
 )
 
+# Fork Begin
+notification_content_identifier_fragment = """
+    <key>application-identifier</key>
+    <string>{telegram_team_id}.{telegram_bundle_id}.NotificationContent</string>
+""".format(
+    telegram_team_id=telegram_team_id,
+    telegram_bundle_id=telegram_bundle_id
+)
+
+plist_fragment(
+    name = "NotificationContentEntitlements",
+    extension = "entitlements",
+    template = "".join([
+        only_app_groups_fragment,
+        notification_content_identifier_fragment
+    ])
+)
+# Fork End
+
 ios_extension(
     name = "NotificationContentExtension",
     bundle_id = "{telegram_bundle_id}.NotificationContent".format(
@@ -1274,6 +1343,7 @@ ios_extension(
     frameworks = [
         ":TelegramUIFramework"
     ],
+    entitlements = ":NotificationContentEntitlements.entitlements" # Fork
 )
 
 plist_fragment(
@@ -1286,7 +1356,7 @@ plist_fragment(
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}.Widget</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>CFBundlePackageType</key>
     <string>XPC!</string>
     <key>NSExtension</key>
@@ -1300,6 +1370,7 @@ plist_fragment(
     </array>
     """.format(
         telegram_bundle_id = telegram_bundle_id,
+        appName = appName
     )
 )
 
@@ -1353,6 +1424,25 @@ genrule(
     ]
 )
 
+# Fork Begin
+widget_identifier_fragment = """
+    <key>application-identifier</key>
+    <string>{telegram_team_id}.{telegram_bundle_id}.Widget</string>
+""".format(
+    telegram_team_id=telegram_team_id,
+    telegram_bundle_id=telegram_bundle_id
+)
+
+plist_fragment(
+    name = "WidgetEntitlements",
+    extension = "entitlements",
+    template = "".join([
+        only_app_groups_fragment,
+        widget_identifier_fragment
+    ])
+)
+# Fork End
+
 ios_extension(
     name = "WidgetExtension",
     bundle_id = "{telegram_bundle_id}.Widget".format(
@@ -1383,6 +1473,7 @@ ios_extension(
         ":PostboxFramework",
         ":TelegramCoreFramework",
     ],
+    entitlements = ":WidgetEntitlements.entitlements" # Fork
 )
 
 plist_fragment(
@@ -1395,7 +1486,7 @@ plist_fragment(
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}.SiriIntents</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>CFBundlePackageType</key>
     <string>XPC!</string>
     <key>NSExtension</key>
@@ -1424,6 +1515,7 @@ plist_fragment(
     </dict>
     """.format(
         telegram_bundle_id = telegram_bundle_id,
+        appName = appName
     )
 )
 
@@ -1486,6 +1578,25 @@ genrule(
     ]
 )
 
+# Fork Begin
+intents_identifier_fragment = """
+    <key>application-identifier</key>
+    <string>{telegram_team_id}.{telegram_bundle_id}.SiriIntents</string>
+""".format(
+    telegram_team_id=telegram_team_id,
+    telegram_bundle_id=telegram_bundle_id
+)
+
+plist_fragment(
+    name = "IntentsEntitlements",
+    extension = "entitlements",
+    template = "".join([
+        only_app_groups_fragment,
+        intents_identifier_fragment
+    ])
+)
+# Fork End
+
 ios_extension(
     name = "IntentsExtension",
     bundle_id = "{telegram_bundle_id}.SiriIntents".format(
@@ -1513,6 +1624,7 @@ ios_extension(
         ":PostboxFramework",
         ":TelegramCoreFramework",
     ],
+    entitlements = ":IntentsEntitlements.entitlements" # Fork
 )
 
 plist_fragment(
@@ -1525,7 +1637,7 @@ plist_fragment(
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}.BroadcastUpload</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>CFBundlePackageType</key>
     <string>XPC!</string>
     <key>NSExtension</key>
@@ -1539,6 +1651,7 @@ plist_fragment(
     </dict>
     """.format(
         telegram_bundle_id = telegram_bundle_id,
+        appName = appName
     )
 )
 
@@ -1580,6 +1693,25 @@ genrule(
     ]
 )
 
+# Fork Begin
+broadcast_upload_identifier_fragment = """
+    <key>application-identifier</key>
+    <string>{telegram_team_id}.{telegram_bundle_id}.BroadcastUpload</string>
+""".format(
+    telegram_team_id=telegram_team_id,
+    telegram_bundle_id=telegram_bundle_id
+)
+
+plist_fragment(
+    name = "BroadcastUploadEntitlements",
+    extension = "entitlements",
+    template = "".join([
+        only_app_groups_fragment,
+        broadcast_upload_identifier_fragment
+    ])
+)
+# Fork End
+
 ios_extension(
     name = "BroadcastUploadExtension",
     bundle_id = "{telegram_bundle_id}.BroadcastUpload".format(
@@ -1606,6 +1738,7 @@ ios_extension(
         ":TelegramUIFramework",
         ":SwiftSignalKitFramework",
     ],
+    entitlements = ":BroadcastUploadEntitlements.entitlements" # Fork
 )
 
 plist_fragment(
@@ -1618,7 +1751,7 @@ plist_fragment(
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}.NotificationService</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>CFBundlePackageType</key>
     <string>XPC!</string>
     <key>NSExtension</key>
@@ -1637,6 +1770,7 @@ plist_fragment(
     </dict>
     """.format(
         telegram_bundle_id = telegram_bundle_id,
+        appName = appName
     )
 )
 
@@ -1658,6 +1792,25 @@ genrule(
         "//visibility:public",
     ]
 )
+
+#Fork Begin
+notification_service_identifier_fragment = """
+    <key>application-identifier</key>
+    <string>{telegram_team_id}.{telegram_bundle_id}.NotificationService</string>
+""".format(
+    telegram_team_id=telegram_team_id,
+    telegram_bundle_id=telegram_bundle_id
+)
+
+plist_fragment(
+    name = "NotificationServiceEntitlements",
+    extension = "entitlements",
+    template = "".join([
+        only_app_groups_fragment,
+        notification_service_identifier_fragment
+    ])
+)
+#Fork End
 
 ios_extension(
     name = "NotificationServiceExtension",
@@ -1687,6 +1840,7 @@ ios_extension(
         ":PostboxFramework",
         ":TelegramCoreFramework",
     ],
+    entitlements = ":NotificationServiceEntitlements.entitlements",
 )
 
 plist_fragment(
@@ -1703,11 +1857,11 @@ plist_fragment(
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleDisplayName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>{appName}</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleSignature</key>
@@ -1860,6 +2014,7 @@ plist_fragment(
     <true/>
     """.format(
         telegram_bundle_id = telegram_bundle_id,
+        appName = appName
     )
 )
 
@@ -1884,11 +2039,12 @@ ios_application(
     alternate_icons = [
         ":{}".format(name) for name in alternate_icon_folders
     ],
-    #ipa_post_processor = ":AddAlternateIcons",
+#    ipa_post_processor = ":AddAlternateIcons",
     resources = [
         ":LaunchScreen",
-        ":DefaultAppIcon",
-        #":AdditionalIcons",
+#        ":DefaultAppIcon", Fork
+        ":AdditionalIcons",
+        ":ForkAppIcon",
     ],
     frameworks = [
         ":MtProtoKitFramework",
@@ -1940,6 +2096,14 @@ ios_ui_test(
     test_host = ":Telegram",
 )
 
+# Fork begin
+filegroup(
+    name = "ForkAppIcon",
+    srcs = glob([
+        "Telegram-iOS/AppIcons.xcassets/BlueIcon.appiconset/**",
+    ], exclude = ["Telegram-iOS/AppIcons.xcassets/**/.*"]),
+)
+# Fork end
 # Temporary targets used to simplify webrtc build tests
 
 ios_application(

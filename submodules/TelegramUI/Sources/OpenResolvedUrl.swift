@@ -418,13 +418,11 @@ func openResolvedUrlImpl(_ resolvedUrl: ResolvedUrl, context: AccountContext, ur
                 present(textAlertController(context: context, updatedPresentationData: updatedPresentationData, title: nil, text: errorText, actions: [TextAlertAction(type: .defaultAction, title: presentationData.strings.Common_OK, action: {})]), nil)
             }))
             dismissInput()
-        #if ENABLE_WALLET
         case let .wallet(address, amount, comment):
             dismissInput()
             context.sharedContext.openWallet(context: context, walletContext: .send(address: address, amount: amount, comment: comment)) { c in
                 navigationController?.pushViewController(c)
             }
-        #endif
         case let .settings(section):
             dismissInput()
             switch section {

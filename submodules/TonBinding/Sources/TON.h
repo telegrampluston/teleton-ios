@@ -100,8 +100,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) int64_t otherFee;
 @property (nonatomic, strong, readonly) TONTransactionMessage * _Nullable inMessage;
 @property (nonatomic, strong, readonly) NSArray<TONTransactionMessage *> * _Nonnull outMessages;
+@property (nonatomic, readonly) bool isInitialization;
 
-- (instancetype)initWithData:(NSData * _Nonnull)data transactionId:(TONTransactionId * _Nonnull)transactionId timestamp:(int64_t)timestamp storageFee:(int64_t)storageFee otherFee:(int64_t)otherFee inMessage:(TONTransactionMessage * _Nullable)inMessage outMessages:(NSArray<TONTransactionMessage *> * _Nonnull)outMessages;
+- (instancetype)initWithData:(NSData * _Nonnull)data transactionId:(TONTransactionId * _Nonnull)transactionId timestamp:(int64_t)timestamp storageFee:(int64_t)storageFee otherFee:(int64_t)otherFee inMessage:(TONTransactionMessage * _Nullable)inMessage outMessages:(NSArray<TONTransactionMessage *> * _Nonnull)outMessages isInitialization:(bool)isInitialization;
 
 @end
 
@@ -165,11 +166,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithKeystoreDirectory:(NSString *)keystoreDirectory config:(NSString *)config blockchainName:(NSString *)blockchainName performExternalRequest:(void (^)(TONExternalRequest * _Nonnull))performExternalRequest enableExternalRequests:(bool)enableExternalRequests syncStateUpdated:(void (^)(float))syncStateUpdated;
 
-- (SSignal *)updateConfig:(NSString *)config blockchainName:(NSString *)blockchainName;
+- (void)updateConfig:(NSString *)config blockchainName:(NSString *)blockchainName;
 - (SSignal *)validateConfig:(NSString *)config blockchainName:(NSString *)blockchainName;
 
 - (SSignal *)createKeyWithLocalPassword:(NSData *)localPassword mnemonicPassword:(NSData *)mnemonicPassword;
-- (SSignal *)getWalletAccountAddressWithPublicKey:(NSString *)publicKey initialWalletId:(int64_t)initialWalletId rwalletInitialPublicKey:(NSString * _Nullable)rwalletInitialPublicKey;
+- (SSignal *)getCreatedWalletAccountAddressWithPublicKey:(NSString *)publicKey initialWalletId:(int64_t)initialWalletId;
+- (SSignal *)guessImportedWalletAddressWithPublicKey:(NSString *)publicKey;
 - (SSignal *)getAccountStateWithAddress:(NSString *)accountAddress;
 - (SSignal *)generateSendGramsQueryFromKey:(TONKey *)key localPassword:(NSData *)localPassword fromAddress:(NSString *)fromAddress toAddress:(NSString *)address amount:(int64_t)amount comment:(NSData *)comment encryptComment:(bool)encryptComment forceIfDestinationNotInitialized:(bool)forceIfDestinationNotInitialized timeout:(int32_t)timeout randomId:(int64_t)randomId;
 - (SSignal *)generateFakeSendGramsQueryFromAddress:(NSString *)fromAddress toAddress:(NSString *)address amount:(int64_t)amount comment:(NSData *)comment encryptComment:(bool)encryptComment forceIfDestinationNotInitialized:(bool)forceIfDestinationNotInitialized timeout:(int32_t)timeout;

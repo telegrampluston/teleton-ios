@@ -256,6 +256,11 @@ swift_library(
         "//submodules/TabBarUI:TabBarUI",
         "//submodules/SoftwareVideo:SoftwareVideo",
         "//submodules/ManagedFile:ManagedFile",
+        # Fork begin
+        "//submodules/WalletUI:WalletUI",
+        "//submodules/WalletContextImpl:WalletContextImpl",
+        "//submodules/ForkWalletCore:ForkWalletCore",
+        # Fork end
     ] + select({
         "@build_bazel_rules_apple//apple:ios_armv7": [],
         "@build_bazel_rules_apple//apple:ios_arm64": appcenter_targets,

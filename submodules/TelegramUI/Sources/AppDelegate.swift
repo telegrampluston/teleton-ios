@@ -665,16 +665,23 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
             self.window?.rootViewController?.dismiss(animated: true, completion: nil)
         }, getAvailableAlternateIcons: {
             if #available(iOS 10.3, *) {
+                // MARK: - Fork
                 var icons = [
-                    PresentationAppIcon(name: "BlueIcon", imageName: "BlueIcon", isDefault: buildConfig.isAppStoreBuild),
-                    PresentationAppIcon(name: "New2", imageName: "New2"),
-                    PresentationAppIcon(name: "New1", imageName: "New1"),
-                    PresentationAppIcon(name: "BlackIcon", imageName: "BlackIcon"),
-                    PresentationAppIcon(name: "BlueClassicIcon", imageName: "BlueClassicIcon"),
-                    PresentationAppIcon(name: "BlackClassicIcon", imageName: "BlackClassicIcon"),
-                    PresentationAppIcon(name: "BlueFilledIcon", imageName: "BlueFilledIcon"),
-                    PresentationAppIcon(name: "BlackFilledIcon", imageName: "BlackFilledIcon")
+                    PresentationAppIcon(name: "ForkMainIcon", imageName: "ForkMainIcon", isDefault: buildConfig.isAppStoreBuild),
+                    PresentationAppIcon(name: "ForkRubyIcon", imageName: "ForkRubyIcon"),
+                    PresentationAppIcon(name: "ForkOnyxIcon", imageName: "ForkOnyxIcon"),
+                    PresentationAppIcon(name: "ForkEmeraldIcon", imageName: "ForkEmeraldIcon"),
+                    PresentationAppIcon(name: "ForkAmethystIcon", imageName: "ForkAmethystIcon"),
+//                    PresentationAppIcon(name: "BlueIcon", imageName: "BlueIcon", isDefault: buildConfig.isAppStoreBuild),
+//                    PresentationAppIcon(name: "New2", imageName: "New2"),
+//                    PresentationAppIcon(name: "New1", imageName: "New1"),
+//                    PresentationAppIcon(name: "BlackIcon", imageName: "BlackIcon"),
+//                    PresentationAppIcon(name: "BlueClassicIcon", imageName: "BlueClassicIcon"),
+//                    PresentationAppIcon(name: "BlackClassicIcon", imageName: "BlackClassicIcon"),
+//                    PresentationAppIcon(name: "BlueFilledIcon", imageName: "BlueFilledIcon"),
+//                    PresentationAppIcon(name: "BlackFilledIcon", imageName: "BlackFilledIcon")
                 ]
+                // MARK: -
                 if buildConfig.isInternalBuild {
                     icons.append(PresentationAppIcon(name: "WhiteFilledIcon", imageName: "WhiteFilledIcon"))
                 }

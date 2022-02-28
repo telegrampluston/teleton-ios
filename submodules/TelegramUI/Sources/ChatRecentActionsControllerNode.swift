@@ -926,10 +926,13 @@ final class ChatRecentActionsControllerNode: ViewControllerTracingNode {
                         break
                     case .theme:
                         break
-                    #if ENABLE_WALLET
-                    case .wallet:
-                        break
-                    #endif
+                    case .wallet(let address, let amount, let comment):
+                        strongSelf.context.sharedContext.openWallet(
+                            context: strongSelf.context,
+                            walletContext: .send(address: address, amount: amount, comment: comment),
+                            present: { c in
+                                self?.presentController(c, .window(.root), nil)
+                            })
                     case .settings:
                         break
                     case let .joinVoiceChat(peerId, invite):

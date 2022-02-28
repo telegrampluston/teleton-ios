@@ -43,6 +43,14 @@ public struct PresentationResourcesRootController {
         })
     }
     
+    // MARK: - Fork Begin
+    public static func navigationWalletIcon(_ theme: PresentationTheme) -> UIImage? {
+        return theme.image(PresentationResourceKey.navigationWalletIcon.rawValue, { theme in
+            return generateTintedImage(image: UIImage(bundleImageName: "Chat List/WalletNavigationBarIcon"), color: theme.rootController.navigationBar.accentTextColor)
+        })
+    }
+    // MARK: - Fork End
+    
     public static func navigationShareIcon(_ theme: PresentationTheme) -> UIImage? {
         return theme.image(PresentationResourceKey.navigationShareIcon.rawValue, { theme in
             return generateTintedImage(image: UIImage(bundleImageName: "Chat/Input/Accessory Panels/MessageSelectionForward"), color: theme.rootController.navigationBar.accentTextColor)

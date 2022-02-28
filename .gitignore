@@ -37,6 +37,8 @@ AppBundle.xcworkspace/*
 !*_Xcode.xcodeproj
 .idea
 */.idea/*
+.vscode/
+.env
 submodules/MtProtoKit/TON/macOS/lib/libtonlibjson.0.5.dylib
 submodules/MtProtoKit/TON/macOS/lib/libtonlibjson.dylib
 submodules/MtProtoKit/TON/macOS/lib/cmake/Tonlib/TonlibConfig.cmake
@@ -55,6 +57,8 @@ bazel-genfiles
 bazel-genfiles/*
 bazel-out
 bazel-out/*
+bazel-Fork
+bazel-Fork/*
 bazel-telegram-ios
 bazel-telegram-ios/*
 bazel-testlogs
@@ -62,3 +66,16 @@ bazel-testlogs/*
 */*.swp
 *.swp
 build-input/*
+build-input/data
+build-input/data/*
+build-input/gen
+build-input/gen/*
+*.pyc
+/bazel-Fork-iOS
+!/bazel-Fork-iOS/
+development.bzl
+distribution.bzl
+poeditor_key.txt
+build-system/fork-configuration/*
+build-system/temp-codesigning/*
+bazel-telegrampluston

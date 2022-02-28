@@ -11,6 +11,8 @@ import Display
 import DeviceLocationManager
 import TemporaryCachedPeerDataManager
 import MeshAnimationCache
+import WalletContext // Fork
+import EasyDi
 
 public final class TelegramApplicationOpenUrlCompletion {
     public let completion: (Bool) -> Void
@@ -187,9 +189,9 @@ public enum ResolvedUrl {
     case share(url: String?, text: String?, to: String?)
     case wallpaper(WallpaperUrlParameter)
     case theme(String)
-    #if ENABLE_WALLET
+//    #if ENABLE_WALLET
     case wallet(address: String, amount: Int64?, comment: String?)
-    #endif
+//    #endif
     case settings(ResolvedUrlSettingsSection)
     case joinVoiceChat(PeerId, String?)
     case importStickers
@@ -530,12 +532,12 @@ public enum ChatListSearchFilter: Equatable {
     }
 }
 
-#if ENABLE_WALLET
+//#if ENABLE_WALLET Fork Commented
 public enum OpenWalletContext {
     case generic
     case send(address: String, amount: Int64?, comment: String?)
 }
-#endif
+//#endif Fork Commented
 
 public let defaultContactLabel: String = "_$!<Mobile>!$_"
 
@@ -625,9 +627,7 @@ public protocol SharedAccountContext: AnyObject {
     func openAddContact(context: AccountContext, firstName: String, lastName: String, phoneNumber: String, label: String, present: @escaping (ViewController, Any?) -> Void, pushController: @escaping (ViewController) -> Void, completed: @escaping () -> Void)
     func openAddPersonContact(context: AccountContext, peerId: PeerId, pushController: @escaping (ViewController) -> Void, present: @escaping (ViewController, Any?) -> Void)
     func presentContactsWarningSuppression(context: AccountContext, present: (ViewController, Any?) -> Void)
-    #if ENABLE_WALLET
-    func openWallet(context: AccountContext, walletContext: OpenWalletContext, present: @escaping (ViewController) -> Void)
-    #endif
+    func openWallet(context: AccountContext, walletContext: OpenWalletContext, present: @escaping (ViewController) -> Void) // Fork
     func openImagePicker(context: AccountContext, completion: @escaping (UIImage) -> Void, present: @escaping (ViewController) -> Void)
     
     func makeRecentSessionsController(context: AccountContext, activeSessionsContext: ActiveSessionsContext) -> ViewController & RecentSessionsController
@@ -651,7 +651,6 @@ private final class TonInstanceData {
     var blockchainName: String?
     var instance: TonInstance?
 }
-
 private final class TonNetworkProxyImpl: TonNetworkProxy {
     private let network: Network
     
@@ -692,7 +691,7 @@ public final class StoredTonContext {
                 return TonContext(instance: instance, keychain: self.keychain)
             } else {
                 data.config = config
-                let instance = TonInstance(basePath: self.basePath, config: config, blockchainName: blockchainName, proxy: enableProxy ? TonNetworkProxyImpl(network: self.network) : nil)
+                let instance = TonInstance(basePath: self.basePath, config: config, blockchainName: blockchainName, proxy: /* Fork Commented enableProxy ? TonNetworkProxyImpl(network: self.network) : */nil)
                 data.instance = instance
                 return TonContext(instance: instance, keychain: self.keychain)
             }
@@ -709,7 +708,6 @@ public final class TonContext {
         self.keychain = keychain
     }
 }
-
 #endif
 
 public protocol ComposeController: ViewController {
@@ -728,6 +726,12 @@ public protocol AccountContext: AnyObject {
     var sharedContext: SharedAccountContext { get }
     var account: Account { get }
     var engine: TelegramEngine { get }
+    // MARK: - Fork Begin
+    var diContext: DIContext { get }
+    var initialResolvedConfigValue: EffectiveWalletConfiguration? { get }
+    var walletContext: Atomic<WalletContext?> { get }
+    var walletContextSignal: Signal<WalletContext, NoError> { get }
+    // MARK: - Fork End
     
     var liveLocationManager: LiveLocationManager? { get }
     var peersNearbyManager: PeersNearbyManager? { get }
@@ -756,4 +760,6 @@ public protocol AccountContext: AnyObject {
     func scheduleGroupCall(peerId: PeerId)
     func joinGroupCall(peerId: PeerId, invite: String?, requestJoinAsPeerId: ((@escaping (PeerId?) -> Void) -> Void)?, activeCall: EngineGroupCallDescription)
     func requestCall(peerId: PeerId, isVideo: Bool, completion: @escaping () -> Void)
+    func openWallet() // Fork
+    func rebuildDIContextSingletonsStorage() // Fork
 }

@@ -17,6 +17,13 @@ import TelegramBaseController
 import AsyncDisplayKit
 import PresentationDataUtils
 import MeshAnimationCache
+// MARK: - Fork Begin
+import WalletUI
+import WalletCore
+import WalletContext
+import WalletContextImpl
+import EasyDi
+// MARK: - Fork End
 
 private final class DeviceSpecificContactImportContext {
     let disposable = MetaDisposable()
@@ -110,6 +117,20 @@ public final class AccountContextImpl: AccountContext {
     }
     public let account: Account
     public let engine: TelegramEngine
+    // MARK: - Fork Begin
+    public var diContext = DIContext() // Fork. This context can be set here from outside (SharedAccountContext).
+    public let walletContext = Atomic<WalletContext?>(value: nil)
+    public var walletContextSignal: Signal<WalletContext, NoError> {
+        walletContextPromise.get()
+    }
+    private let updatedConfigValue: UpdatedConfigSignal
+    private let initialResolvedConfig = Atomic<EffectiveWalletConfiguration?>(value: nil)
+    private let walletContextPromise = Promise<WalletContext>()
+    private let walletDisposableSet = DisposableSet()
+    public var initialResolvedConfigValue: EffectiveWalletConfiguration? {
+        initialResolvedConfig.with { $0 }
+    }
+    // MARK: - Fork End
     
     public let fetchManager: FetchManager
     public let prefetchManager: PrefetchManager?
@@ -243,6 +264,36 @@ public final class AccountContextImpl: AccountContext {
         account.callSessionManager.updateVersions(versions: PresentationCallManagerImpl.voipVersions(includeExperimental: true, includeReference: true).map { version, supportsVideo -> CallSessionManagerImplementationVersion in
             CallSessionManagerImplementationVersion(version: version, supportsVideo: supportsVideo)
         })
+        // MARK: - Fork Begin
+        let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+        #if DEBUG
+        print("Starting with \(documentsPath)")
+        #endif
+        let peerId = account.peerId.id._internalGetInt64Value()
+        let storage = WalletStorageInterfaceImpl(
+            path: documentsPath + "/\(peerId)_data",
+            configurationPath: documentsPath + "/\(peerId)_configuration_v2"
+        )
+        let keysPath = documentsPath + "/\(peerId)_keys"
+        let initialConfigValue = initialConfig(storage: storage)
+        let updatedConfigValue = updatedConfig(storage: storage)
+        let resolvedInitialConfig = resolvedInitialConfig(storage: storage, initialConfigValue: initialConfigValue, updatedConfigValue: updatedConfigValue)
+        self.updatedConfigValue = updatedConfigValue
+        let walletConfigDisposable = resolvedInitialConfig.start(next: { [weak self] in
+            guard let strongSelf = self else { return }
+            let walletContext = WalletContextImpl(
+                storage: storage,
+                keysPath: keysPath,
+                config: $0.config,
+                blockchainName: $0.networkName,
+                accountContext: strongSelf
+            )
+            _ = strongSelf.initialResolvedConfig.swap($0)
+            _ = strongSelf.walletContext.swap(walletContext)
+            strongSelf.walletContextPromise.set(.single(walletContext))
+        })
+        walletDisposableSet.add(walletConfigDisposable)
+        // MARK: - Fork End
     }
     
     deinit {
@@ -251,6 +302,9 @@ public final class AccountContextImpl: AccountContext {
         self.contentSettingsDisposable?.dispose()
         self.appConfigurationDisposable?.dispose()
         self.experimentalUISettingsDisposable?.dispose()
+        // MARK: - Fork Begin
+        self.walletDisposableSet.dispose()
+        // MARK: - Fork End
     }
     
     public func storeSecureIdPassword(password: String) {
@@ -443,6 +497,198 @@ public final class AccountContextImpl: AccountContext {
             completion()
         }
     }
+    // MARK: - Fork Begin
+    public func rebuildDIContextSingletonsStorage() {
+        diContext.destroySingletons()
+    }
+    public func openWallet() {
+        let theme = sharedContext.currentPresentationData.with { $0 }.theme
+        var cancelAction: (() -> Void)? = nil
+        let loadingVC = OverlayStatusController(
+            theme: theme,
+            type: .loading(cancelled: {
+                cancelAction?()
+            })
+        )
+        presentOnMain(loadingVC)
+        let disposable = (walletContextSignal |> take(1) |> deliverOnMainQueue).start(
+            next: { [weak self, weak loadingVC] in
+                loadingVC?.dismiss()
+                guard
+                    let updatedConfigValue = self?.updatedConfigValue,
+                    let initialResolvedConfig = self?.initialResolvedConfig.with({ $0 }) else {
+                    return
+                }
+                self?.startWatchingWalletRecordsAndStartWhenReady(initialResolvedConfig, updatedConfigValue, $0)
+            })
+        walletDisposableSet.add(disposable)
+        cancelAction = { [weak loadingVC] in
+            disposable.dispose()
+            loadingVC?.dismiss()
+        }
+    }
+    private func startWatchingWalletRecordsAndStartWhenReady(
+        _ initialResolvedConfig: EffectiveWalletConfiguration,
+        _ updatedConfigValue: UpdatedConfigSignal,
+        _ walletContext: WalletContext
+    ) {
+        let disposable = (combineLatest(
+            walletContext.storage.getWalletRecords(),
+            walletContext.keychain.encryptionPublicKey()
+        ) |> deliverOnMainQueue)
+            .start(next: { [weak self] records, publicKey in
+                guard let strongSelf = self else { return }
+                if let record = records.first {
+                    if let publicKey = publicKey {
+                        let recordPublicKey: Data
+                        switch record.info {
+                        case let .ready(info, _, _):
+                            recordPublicKey = info.encryptedSecret.publicKey
+                        case let .imported(info):
+                            recordPublicKey = info.encryptedSecret.publicKey
+                        }
+                        if recordPublicKey == publicKey {
+                            switch record.info {
+                            case let .ready(info, exportCompleted, _):
+                                if exportCompleted {
+                                    let infoScreen = WalletInfoScreen(
+                                        context: walletContext,
+                                        walletInfo: info,
+                                        blockchainNetwork: initialResolvedConfig.activeNetwork,
+                                        enableDebugActions: false
+                                    )
+                                    strongSelf.beginWalletWithController(infoScreen, initialResolvedConfig, updatedConfigValue, walletContext)
+                                    /* Not sure yet whether it will work now, I think we need to rewrite that
+                                    if let url = launchOptions?[UIApplication.LaunchOptionsKey.url] as? URL {
+                                        let walletUrl = parseWalletUrl(url)
+                                        var randomId: Int64 = 0
+                                        arc4random_buf(&randomId, 8)
+                                        let sendScreen = walletSendScreen(context: walletContext, randomId: randomId, walletInfo: info, blockchainNetwork: initialResolvedConfig.activeNetwork, address: walletUrl?.address, amount: walletUrl?.amount, comment: walletUrl?.comment)
+                                        navigationController.pushViewController(sendScreen)
+                                    }
+                                    */
+                                } else {
+                                    let createdScreen = WalletSplashScreen(
+                                        context: walletContext,
+                                        blockchainNetwork: initialResolvedConfig.activeNetwork,
+                                        mode: .created(walletInfo: info, words: nil),
+                                        walletCreatedPreloadState: nil
+                                    )
+                                    strongSelf.beginWalletWithController(createdScreen, initialResolvedConfig, updatedConfigValue, walletContext)
+                                }
+                            case let .imported(info):
+                                let createdScreen = WalletSplashScreen(
+                                    context: walletContext,
+                                    blockchainNetwork: initialResolvedConfig.activeNetwork,
+                                    mode: .successfullyImported(importedInfo: info),
+                                    walletCreatedPreloadState: nil
+                                )
+                                strongSelf.beginWalletWithController(createdScreen, initialResolvedConfig, updatedConfigValue, walletContext)
+                            }
+                        } else {
+                            let splashScreen = WalletSplashScreen(
+                                context: walletContext,
+                                blockchainNetwork: initialResolvedConfig.activeNetwork,
+                                mode: .secureStorageReset(.changed),
+                                walletCreatedPreloadState: nil
+                            )
+                            strongSelf.beginWalletWithController(splashScreen, initialResolvedConfig, updatedConfigValue, walletContext)
+                        }
+                    } else {
+                        let splashScreen = WalletSplashScreen(
+                            context: walletContext,
+                            blockchainNetwork: initialResolvedConfig.activeNetwork,
+                            mode: WalletSplashMode.secureStorageReset(.notAvailable),
+                            walletCreatedPreloadState: nil
+                        )
+                        strongSelf.beginWalletWithController(splashScreen, initialResolvedConfig, updatedConfigValue, walletContext)
+                    }
+                } else {
+                    if publicKey != nil {
+                        let splashScreen = WalletSplashScreen(
+                            context: walletContext,
+                            blockchainNetwork: initialResolvedConfig.activeNetwork,
+                            mode: .intro,
+                            walletCreatedPreloadState: nil
+                        )
+                        strongSelf.beginWalletWithController(splashScreen, initialResolvedConfig, updatedConfigValue, walletContext)
+                    } else {
+                        let splashScreen = WalletSplashScreen(
+                            context: walletContext,
+                            blockchainNetwork: initialResolvedConfig.activeNetwork,
+                            mode: .secureStorageNotAvailable,
+                            walletCreatedPreloadState: nil
+                        )
+                        strongSelf.beginWalletWithController(splashScreen, initialResolvedConfig, updatedConfigValue, walletContext)
+                    }
+                }
+        })
+        walletDisposableSet.add(disposable)
+    }
+    private func beginWalletWithController(
+        _ controller: ViewController,
+        _ initialResolvedConfig: EffectiveWalletConfiguration,
+        _ updatedConfigValue: UpdatedConfigSignal,
+        _ walletContext: WalletContext
+    ) {
+        /* TODO: Wallet. Remove that?
+        let presentationData = sharedContext.currentPresentationData.with({ $0 })
+        let navigationController = NavigationController(
+            mode: .single,
+            theme: .init(presentationTheme: presentationData.theme),
+            backgroundDetailsMode: nil
+        )
+        navigationController.setViewControllers([WalletApplicationSplashScreen(theme: presentationData.theme)], animated: false)
+        presentOnMain(navigationController)
+        */
+        guard let navigationController = sharedContext.mainWindow?.viewController as? NavigationController else {
+            return
+        }
+        let begin: () -> Void = { [weak self] in
+            guard let strongSelf = self else { return }
+            let presentationData = strongSelf.sharedContext.currentPresentationData.with({ $0 })
+
+            navigationController.pushViewController(controller)
+            
+            var previousBlockchainName = initialResolvedConfig.networkName
+            
+            let disposable = (updatedConfigValue |> deliverOnMainQueue).start(next: { _, blockchainName, blockchainNetwork, config in
+                let disposable = walletContext.tonInstance.validateConfig(config: config, blockchainName: blockchainName).start(completed: {
+                    walletContext.tonInstance.updateConfig(config: config, blockchainName: blockchainName)
+                    
+                    if previousBlockchainName != blockchainName {
+                        previousBlockchainName = blockchainName
+                        
+                        let overlayController = OverlayStatusController(theme: presentationData.theme, type: .loading(cancelled: nil))
+                        strongSelf.presentOnMain(overlayController)
+                        
+                        let disposable = (deleteAllLocalWalletsData(storage: walletContext.storage, tonInstance: walletContext.tonInstance)
+                        |> deliverOnMainQueue).start(error: { [weak overlayController] _ in
+                            overlayController?.dismiss()
+                        }, completed: { [weak overlayController] in
+                            // TODO: Wallet. Maybe we will show some kind of message here?
+                            overlayController?.dismiss()
+                            navigationController.popToRoot(animated: false)
+                        })
+                        strongSelf.walletDisposableSet.add(disposable)
+                    }
+                })
+                strongSelf.walletDisposableSet.add(disposable)
+            })
+            strongSelf.walletDisposableSet.add(disposable)
+        }
+        if let splashScreen = navigationController.viewControllers.first as? WalletApplicationSplashScreen, let _ = controller as? WalletSplashScreen {
+            splashScreen.animateOut(completion: {
+                begin()
+            })
+        } else {
+            begin()
+        }
+    }
+    private func presentOnMain(_ controller: ContainableController) {
+        sharedContext.mainWindow?.present(controller, on: .root)
+    }
+    // MARK: - Fork End
 }
 
 private func chatLocationContext(holder: Atomic<ChatLocationContextHolder?>, account: Account, data: ChatReplyThreadMessage) -> ReplyThreadHistoryContext {
