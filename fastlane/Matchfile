@@ -1,4 +1,4 @@
-git_url("git@github.com:alexanderlurie/teleton-signing-identities.git")
+git_url("git@github.com:telegrampluston/teleton-signing-identities.git")
 
 storage_mode("git")
 
