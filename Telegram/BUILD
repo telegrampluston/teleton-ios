@@ -227,12 +227,13 @@ filegroup(
     ], exclude = ["Telegram-iOS/*.lproj/**/.*"]),
 )
 
-filegroup(
-    name = "Icons",
-    srcs = glob([
-        "Telegram-iOS/Icons.xcassets/**/*",
-    ], exclude = ["Telegram-iOS/Icons.xcassets/**/.*"]),
-)
+# Fork commented
+#filegroup(
+#    name = "Icons",
+#    srcs = glob([
+#        "Telegram-iOS/Icons.xcassets/**/*",
+#    ], exclude = ["Telegram-iOS/Icons.xcassets/**/.*"]),
+#)
 
 filegroup(
     name = "AppIcons",
@@ -241,19 +242,20 @@ filegroup(
     ], exclude = ["Telegram-iOS/AppIcons.xcassets/**/.*"]),
 )
 
-filegroup(
-    name = "DefaultAppIcon",
-    srcs = glob([
-        "Telegram-iOS/DefaultAppIcon.xcassets/**/*",
-    ], exclude = ["Telegram-iOS/DefaultAppIcon.xcassets/**/.*"]),
-)
-
-filegroup(
-    name = "BlackAppIcon",
-    srcs = glob([
-        "Telegram-iOS/BlackIcon.xcassets/**/*",
-    ], exclude = ["Telegram-iOS/BlackIcon.xcassets/**/.*"]),
-)
+# Fork commented
+#filegroup(
+#    name = "DefaultAppIcon",
+#    srcs = glob([
+#        "Telegram-iOS/DefaultAppIcon.xcassets/**/*",
+#    ], exclude = ["Telegram-iOS/DefaultAppIcon.xcassets/**/.*"]),
+#)
+#
+#filegroup(
+#    name = "BlackAppIcon",
+#    srcs = glob([
+#        "Telegram-iOS/BlackIcon.xcassets/**/*",
+#    ], exclude = ["Telegram-iOS/BlackIcon.xcassets/**/.*"]),
+#)
 
 filegroup(
     name = "DefaultIcon",
@@ -1997,7 +1999,7 @@ plist_fragment(
             <string>Telegram iOS Color Theme File</string>
             <key>UTTypeIconFiles</key>
             <array>
-                <string>BlueIcon@3x.png</string>
+                <string>180.png</string>
             </array>
             <key>UTTypeIdentifier</key>
             <string>org.telegram.Telegram-iOS.theme</string>
