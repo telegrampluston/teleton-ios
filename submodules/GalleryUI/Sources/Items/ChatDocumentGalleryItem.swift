@@ -123,11 +123,12 @@ class ChatDocumentGalleryItemNode: ZoomableContentGalleryItemNode, WKNavigationD
             webView.allowsBackForwardNavigationGestures = false
             self.webView = webView
         } else {
-            let _ = registeredURLProtocol
-            let webView = UIWebView()
-            
-            webView.scalesPageToFit = true
-            self.webView = webView
+//            let _ = registeredURLProtocol Fork commented
+//            let webView = UIWebView()
+//
+//            webView.scalesPageToFit = true
+//            self.webView = webView
+            self.webView = UIView() // Fork
         }
         self.footerContentNode = ChatItemGalleryFooterContentNode(context: context, presentationData: presentationData)
         
@@ -277,9 +278,10 @@ class ChatDocumentGalleryItemNode: ZoomableContentGalleryItemNode, WKNavigationD
                                         webView.loadFileURL(URL(fileURLWithPath: data.path), allowingReadAccessTo: URL(fileURLWithPath: data.path))
                                 }
                             }
-                        } else if let webView = strongSelf.webView as? UIWebView {
-                            webView.loadRequest(URLRequest(url: URL(fileURLWithPath: data.path)))
                         }
+//                        else if let webView = strongSelf.webView as? UIWebView { For commented
+//                            webView.loadRequest(URLRequest(url: URL(fileURLWithPath: data.path)))
+//                        }
                     }
                 }
             }))
