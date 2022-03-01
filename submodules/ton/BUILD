@@ -46,6 +46,7 @@ genrule(
     name = "ton_build",
     srcs = [
         "build-ton-bazel.sh",
+        "@cmake_tar_gz//file",
         "iOS-bazel.cmake",
         ":TonSources",
         "//third-party/boringssl:crypto",
@@ -63,7 +64,7 @@ genrule(
     CMAKE_DIR="$$(pwd)/$$BUILD_DIR/cmake"
     rm -rf "$$CMAKE_DIR"
     mkdir -p "$$CMAKE_DIR"
-    tar -xf "$(location //third-party/cmake:cmake.tar)" -C "$$CMAKE_DIR"
+    tar -xf "$(location @cmake_tar_gz//file)" -C "$$CMAKE_DIR"
 
     if [ "$(TARGET_CPU)" == "ios_armv7" ]; then
         BUILD_ARCH="armv7"
@@ -91,7 +92,7 @@ genrule(
     done
     mkdir -p "$$BUILD_DIR/Public/ton"
 
-    PATH="$$PATH:$$CMAKE_DIR/bin" sh $$BUILD_DIR/build-ton-bazel.sh "$$BUILD_DIR" "$$BUILD_DIR" "$$BUILD_DIR/openssl_headers" $$BUILD_ARCH
+    PATH="$$PATH:$$CMAKE_DIR/cmake-3.19.2-macos-universal/CMake.app/Contents/bin" sh $$BUILD_DIR/build-ton-bazel.sh "$$BUILD_DIR" "$$BUILD_DIR" "$$BUILD_DIR/openssl_headers" $$BUILD_ARCH
     """ +
     "\n".join([
         "cp -f \"$$BUILD_DIR/build/out/include/{}\" \"$(location Public/ton/include/{})\"".format(header, header) for header in ton_headers
@@ -102,9 +103,6 @@ genrule(
     ]),
     outs = ["Public/ton/include/" + x for x in ton_headers] +
     ["Public/ton/lib/lib{}.a".format(x) for x in ton_lib_names],
-    tools = [
-        "//third-party/cmake:cmake.tar",
-    ],
     visibility = [
         "//visibility:public",
     ]
