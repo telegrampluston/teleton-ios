@@ -215,7 +215,7 @@ lane :bazel_upload_app do
   end
   upload_to_testflight(
     ipa: ENV['IPA_PATH'],
-    app_identifier: "com.teleton.app",
+    app_identifier: "io.teleton.app",
     skip_waiting_for_build_processing: true,
   )
   upload_dsyms
