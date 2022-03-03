@@ -14,7 +14,7 @@ lane :fetch_dev_identities do
   match(
     type: 'development',
     force_for_new_devices: false,
-    readonly: true, 
+    readonly: false, 
     team_id: Fork::TeamId, 
     app_identifier: [
       Fork::AppIdentifier::Development,

@@ -1795,7 +1795,7 @@ genrule(
     ]
 )
 
-#Fork Begin
+# Fork Begin (NSE Filtering)
 notification_service_identifier_fragment = """
     <key>application-identifier</key>
     <string>{telegram_team_id}.{telegram_bundle_id}.NotificationService</string>
@@ -1804,12 +1804,18 @@ notification_service_identifier_fragment = """
     telegram_bundle_id=telegram_bundle_id
 )
 
+notifications_filtering_fragment = """
+    <key>com.apple.developer.usernotifications.filtering</key>
+    <true/>
+    """
+
 plist_fragment(
     name = "NotificationServiceEntitlements",
     extension = "entitlements",
     template = "".join([
         only_app_groups_fragment,
-        notification_service_identifier_fragment
+        notification_service_identifier_fragment,
+        notifications_filtering_fragment,
     ])
 )
 #Fork End
